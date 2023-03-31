@@ -1,58 +1,85 @@
-pipeline {
 
-    parameters {
-        booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
-    } 
-    environment {
-        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
-    }
+# Configure the AWS Provider
+provider "aws" {
+  region = "us-east-1b"
+}
+resource "aws_vpc" "main" {
+  cidr_block       = "10.0.0.0/16"
 
-   agent  any
-    stages {
-    stage('Credentials') {
-            steps {
-                sh ' export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID'
-                sh ' export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY'
-
-            }
-        }
-        stage('Init') {
-            steps {
-                sh ' terraform init'
-            }
-        }
-        stage('Plan') {
-            steps {
-                sh " terraform plan -no-color -out=tfplan.txt"
-                sh "pwd"
-            }
-        }       
-        stage('Validate') {
-            steps {
-                sh " terraform validate"
-            }
-        } 
-    //     stage('Approval') {
-    //        when {
-    //            not {
-    //                equals expected: true, actual: params.autoApprove
-    //            }
-    //        }
-
-    //        steps {
-    //            script {
-    //                 input message: "Do you want to apply the plan?",
-    //                 parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: readFile 'tfplan.txt')]
-    //            }
-    //        }
-    //    }
-
-    //     stage('Apply') {
-    //         steps {
-    //             sh " terraform apply --auto-approve"
-    //         }
-    //     }
-    }
-
+  tags = {
+    Name = "terraform-vpc"
   }
+}
+
+#Internet Gateway
+
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "terraform-igw"
+  }
+}
+
+#Subnets
+
+#First Subnet
+resource "aws_subnet" "public1" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.0.0/24"
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "public-subnet1"
+  }
+}
+
+#Second Subnet
+resource "aws_subnet" "public2" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.1.0/24"
+  availability_zone = "us-east-1b"
+
+  tags = {
+    Name = "public-subnet2"
+  }
+}
+
+#Third Subnet
+resource "aws_subnet" "public3" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.2.0/24"
+  availability_zone = "us-east-1c"
+
+  tags = {
+    Name = "public-subnet3"
+  }
+}
+
+#Route Table
+resource "aws_route_table" "rt" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.gw.id
+  }
+
+  tags = {
+    Name = "public-rt"
+  }
+}
+
+#Assocition rt to subnets
+resource "aws_route_table_association" "a" {
+  subnet_id      = aws_subnet.public1.id
+  route_table_id = aws_route_table.rt.id
+}
+resource "aws_route_table_association" "b" {
+  subnet_id      = aws_subnet.public2.id
+  route_table_id = aws_route_table.rt.id
+}
+resource "aws_route_table_association" "c" {
+  subnet_id      = aws_subnet.public3.id
+  route_table_id = aws_route_table.rt.id
+}
