@@ -27,34 +27,34 @@ pipeline {
         }
         stage('Plan') {
             steps {
-                sh " pwd;cd terraform/ ;terraform plan "
+                sh " pwd;cd terraform/ ;terraform plan -no-color -out=tfplan.txt"
             }
         }       
         stage('Validate') {
             steps {
-                sh " pwd;cd terraform/ ; terraform validate"
+                sh " pwd;cd terraform/ ;terraform validate"
             }
         } 
-    //     stage('Approval') {
-    //        when {
-    //            not {
-    //                equals expected: true, actual: params.autoApprove
-    //            }
-    //        }
+        stage('Approval') {
+           when {
+               not {
+                   equals expected: true, actual: params.autoApprove
+               }
+           }
 
-    //        steps {
-    //            script {
-    //                 input message: "Do you want to apply the plan?",
-    //                 parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: readFile 'tfplan.txt')]
-    //            }
-    //        }
-    //    }
+           steps {
+               script {
+                    input message: "Do you want to apply the plan?",
+                    parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: readFile 'tfplan.txt')]
+               }
+           }
+       }
 
-    //     stage('Apply') {
-    //         steps {
-    //             sh " terraform apply --auto-approve"
-    //         }
-    //     }
+        stage('Apply') {
+            steps {
+                sh " terraform apply --auto-approve"
+            }
+        }
     }
 
   }
