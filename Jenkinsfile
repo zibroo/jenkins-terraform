@@ -27,7 +27,7 @@ pipeline {
         }
         stage('Plan') {
             steps {
-                sh " pwd;cd terraform/ ;terraform plan -no-color -out=tfplan.txt"
+                sh " pwd;cd terraform/ ;terraform plan  -out=plan.txt ;  terraform show -no-color plan.txt > tfplan.txt ; rm -rf plan.txt"
             }
         }       
         stage('Validate') {
