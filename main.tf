@@ -2,13 +2,14 @@ terraform {
   required_providers {
     aws = {
       source = "hashicorp/aws"
-      version = "4.60.0"
+      version = "4.61.0"
     }
   }
 }
 
-#VPC
-
+provider "aws" {
+  # Configuration options
+}
 resource "aws_vpc" "main" {
   cidr_block       = "10.0.0.0/16"
 
