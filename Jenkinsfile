@@ -10,20 +10,29 @@ pipeline {
 
    agent  any
     stages {
+        stage('checkout') {
+            steps {
+                 script{
+                        dir("terraform")
+                        {
+                            git "https://github.com/zibroo/jenkins-terraform"
+                        }
+                    }
+                }
+            }
         stage('Init') {
             steps {
-                sh ' terraform init'
+                sh ' pwd;cd terraform/ ;terraform init'
             }
         }
         stage('Plan') {
             steps {
-                sh " terraform plan -no-color -out=tfplan.txt"
-                sh "pwd"
+                sh " pwd;cd terraform/ ;terraform plan "
             }
         }       
         stage('Validate') {
             steps {
-                sh " terraform validate"
+                sh " pwd;cd terraform/ ; terraform validate"
             }
         } 
     //     stage('Approval') {
