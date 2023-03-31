@@ -45,7 +45,7 @@ pipeline {
            steps {
                script {
                     input message: "Do you want to apply the plan?",
-                    parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: readFile 'tfplan.txt')]
+                    parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: readFile 'terraform/tfplan.txt')]
                }
            }
        }
